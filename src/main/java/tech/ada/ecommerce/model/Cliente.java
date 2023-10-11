@@ -36,6 +36,12 @@ public class Cliente implements Serializable {
     @Column(nullable = false)
     private String senha;
 
+    @Column(nullable = false)
+    private boolean ativo;
+
+    @Column
+    private Date dataDesativacao;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Compra> compras;
 
@@ -89,6 +95,22 @@ public class Cliente implements Serializable {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
+    public Date getDataDesativacao() {
+        return dataDesativacao;
+    }
+
+    public void setDataDesativacao(Date dataDesativacao) {
+        this.dataDesativacao = dataDesativacao;
     }
 
     public List<Compra> getCompras() {
