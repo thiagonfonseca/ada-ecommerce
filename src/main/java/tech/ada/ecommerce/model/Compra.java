@@ -27,12 +27,15 @@ public class Compra {
 
     private double valorTotal;
 
-//    @OneToMany(fetch = FetchType.LAZY)
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
+//    @OneToMany
     private List<ItemProduto> itens;
 
     @Enumerated(value = EnumType.STRING)
     private StatusEnum status;
+
+    @OneToOne
+    private FormaPagamento formaPagamento;
 
     public Compra() {}
 
@@ -107,6 +110,15 @@ public class Compra {
     public void setStatus(StatusEnum status) {
         this.status = status;
     }
+
+    public FormaPagamento getFormaPagamento() {
+        return formaPagamento;
+    }
+
+    public void setFormaPagamento(FormaPagamento formaPagamento) {
+        this.formaPagamento = formaPagamento;
+    }
+
 
     @Override
     public boolean equals(Object o) {
