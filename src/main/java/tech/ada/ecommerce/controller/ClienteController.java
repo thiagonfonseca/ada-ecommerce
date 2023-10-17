@@ -30,11 +30,17 @@ public class ClienteController {
         return clienteService.buscarTodosOsClientes();
     }
 
-    @PostMapping("")
+    @GetMapping("/ativos")
+    public List<Cliente> getClientesAtivos() {
+        return clienteService.buscarClientesAtivos();
+    }
+
+//    @PostMapping("")
 //    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "", method = { RequestMethod.POST, RequestMethod.PUT })
     public ResponseEntity<ClienteDTO> saveCliente(@RequestBody ClienteDTO cliente) {
         try {
-            ClienteDTO savedCliente = clienteService.criarCliente(cliente);
+            ClienteDTO savedCliente = clienteService.salvarCliente(cliente);
             if (savedCliente != null)
                 return new ResponseEntity<>(savedCliente, HttpStatus.CREATED);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -58,5 +64,25 @@ public class ClienteController {
         clienteService.deletarCliente(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> ativarDesativarCliente(@PathVariable("id") Long id, @RequestParam("ativo") boolean ativo) {
+        clienteService.ativarDesativarCliente(ativo, id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+//    @PutMapping("")
+//    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody ClienteDTO cliente) {
+//        try {
+//            ClienteDTO savedCliente = clienteService.salvarCliente(cliente);
+//            if (savedCliente != null)
+//                return new ResponseEntity<>(savedCliente, HttpStatus.CREATED);
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        } catch (Exception exception) {
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
+
 
 }

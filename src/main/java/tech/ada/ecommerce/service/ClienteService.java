@@ -30,12 +30,23 @@ public class ClienteService {
         return clientes;
     }
 
-    public ClienteDTO criarCliente(ClienteDTO clienteDTO) {
+    public List<Cliente> buscarClientesAtivos() {
+        return clienteRepo.findByAtivo(true);
+    }
+
+    public ClienteDTO salvarCliente(ClienteDTO clienteDTO) {
         try {
             DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy");
             Date dataNascimento = dtf.parse(clienteDTO.getDataNascimento());
-            Cliente cliente = new Cliente(clienteDTO.getNomeCompleto(), dataNascimento,
-                    clienteDTO.getCpf(), clienteDTO.getEmail(), clienteDTO.getSenha(), clienteDTO.isAtivo());
+            Cliente cliente;
+            if (clienteDTO.getId() != null) {
+                cliente = new Cliente(clienteDTO.getId(), clienteDTO.getNomeCompleto(),
+                        dataNascimento, clienteDTO.getCpf(), clienteDTO.getEmail(),
+                        clienteDTO.getSenha(), clienteDTO.isAtivo());
+            } else {
+                cliente = new Cliente(clienteDTO.getNomeCompleto(), dataNascimento,
+                        clienteDTO.getCpf(), clienteDTO.getEmail(), clienteDTO.getSenha(), clienteDTO.isAtivo());
+            }
             Cliente savedCliente = clienteRepo.save(cliente);
             return criarClienteDTO(savedCliente);
         } catch (ParseException ex) {
