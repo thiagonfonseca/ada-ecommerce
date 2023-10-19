@@ -27,7 +27,7 @@ public class Compra {
 
     private double valorTotal;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "compra")
 //    @OneToMany
     private List<ItemProduto> itens;
 
