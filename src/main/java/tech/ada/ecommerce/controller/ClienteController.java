@@ -11,6 +11,7 @@ import tech.ada.ecommerce.model.ClienteEndereco;
 import tech.ada.ecommerce.model.Endereco;
 import tech.ada.ecommerce.service.ClienteService;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -38,14 +39,26 @@ public class ClienteController {
         return clienteService.buscarClientesAtivos();
     }
 
-//    @PostMapping("")
-//    @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "", method = { RequestMethod.POST, RequestMethod.PUT })
+    @PostMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ClienteDTO> saveCliente(@RequestBody ClienteDTO cliente) {
         try {
             ClienteDTO savedCliente = clienteService.salvarCliente(cliente);
             if (savedCliente != null)
                 return new ResponseEntity<>(savedCliente, HttpStatus.CREATED);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody ClienteDTO cliente) {
+        try {
+            ClienteDTO savedCliente = clienteService.atualizarCliente(cliente);
+            if (savedCliente != null)
+                return new ResponseEntity<>(savedCliente, HttpStatus.OK);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception exception) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -72,6 +85,16 @@ public class ClienteController {
     public ResponseEntity<Void> ativarDesativarCliente(@PathVariable("id") Long id, @RequestParam("ativo") boolean ativo) {
         clienteService.ativarDesativarCliente(ativo, id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PatchMapping("/senha/{id}")
+    public ResponseEntity<String> alterarSenha(@PathVariable("id") Long id,
+                                                 @RequestBody HashMap<String, String> senhas) {
+        try {
+            return clienteService.alterarSenha(id, senhas);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/endereco")

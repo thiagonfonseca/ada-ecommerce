@@ -1,5 +1,6 @@
 package tech.ada.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,6 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 //@Getter
 //@Setter
@@ -42,11 +44,19 @@ public class Cliente implements Serializable {
     @Column
     private Date dataDesativacao;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "cliente")
     private List<Compra> compras;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "cliente")
     private List<ClienteEndereco> enderecos;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "clientes_roles",
+                joinColumns = @JoinColumn(name = "cliente_id", referencedColumnName = "id"),
+                inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private Set<Role> roles;
 
     public Cliente() {
 
@@ -149,6 +159,14 @@ public class Cliente implements Serializable {
 
     public void setEnderecos(List<ClienteEndereco> enderecos) {
         this.enderecos = enderecos;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     @Override

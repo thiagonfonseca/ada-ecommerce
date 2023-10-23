@@ -12,6 +12,7 @@ import tech.ada.ecommerce.model.Cliente;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -26,6 +27,8 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     @Modifying
     @Query("UPDATE Cliente c SET c.ativo = :ativo WHERE c.id = :id")
     void ativarUsuario(@Param("ativo") boolean ativo, @Param("id") Long id);
+
+    Optional<Cliente> findByEmail(String email);
 
 //    List<Cliente> findByNomeCompleto(String nome);
 //    List<Cliente> findByNomeCompletoLike(String nome);

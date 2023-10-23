@@ -1,6 +1,9 @@
 package tech.ada.ecommerce.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tech.ada.ecommerce.dto.ClienteDTO;
 import tech.ada.ecommerce.dto.ClienteEnderecoDTO;
@@ -16,6 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,11 +30,14 @@ public class ClienteService {
     ClienteRepository clienteRepo;
     EnderecoRepository enderecoRepo;
     ClienteEnderecoRepository clienteEnderecoRepo;
+    PasswordEncoder passwordEncoder;
+
     public ClienteService(ClienteRepository clienteRepo, EnderecoRepository enderecoRepo,
-                          ClienteEnderecoRepository clienteEnderecoRepo) {
+                          ClienteEnderecoRepository clienteEnderecoRepo, PasswordEncoder passwordEncoder) {
         this.clienteRepo = clienteRepo;
         this.enderecoRepo = enderecoRepo;
         this.clienteEnderecoRepo = clienteEnderecoRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -47,15 +54,25 @@ public class ClienteService {
         try {
             DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy");
             Date dataNascimento = dtf.parse(clienteDTO.getDataNascimento());
-            Cliente cliente;
-            if (clienteDTO.getId() != null) {
-                cliente = new Cliente(clienteDTO.getId(), clienteDTO.getNomeCompleto(),
-                        dataNascimento, clienteDTO.getCpf(), clienteDTO.getEmail(),
-                        clienteDTO.getSenha(), clienteDTO.isAtivo());
-            } else {
-                cliente = new Cliente(clienteDTO.getNomeCompleto(), dataNascimento,
-                        clienteDTO.getCpf(), clienteDTO.getEmail(), clienteDTO.getSenha(), clienteDTO.isAtivo());
-            }
+            Cliente cliente = new Cliente(clienteDTO.getNomeCompleto(), dataNascimento,
+                    clienteDTO.getCpf(), clienteDTO.getEmail(), passwordEncoder.encode(clienteDTO.getSenha()),
+                    clienteDTO.isAtivo());
+            Cliente savedCliente = clienteRepo.save(cliente);
+            return criarClienteDTO(savedCliente);
+        } catch (ParseException ex) {
+            return null;
+        }
+    }
+
+    public ClienteDTO atualizarCliente(ClienteDTO clienteDTO) {
+        try {
+            DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy");
+            Date dataNascimento = dtf.parse(clienteDTO.getDataNascimento());
+            Optional<Cliente> optCliente = clienteRepo.findById(clienteDTO.getId());
+            Cliente cliente = optCliente.orElseThrow(() -> new RuntimeException("Não existe cliente com esse id"));
+            cliente.setEmail(clienteDTO.getEmail());
+            cliente.setNomeCompleto(clienteDTO.getNomeCompleto());
+            cliente.setDataNascimento(dataNascimento);
             Cliente savedCliente = clienteRepo.save(cliente);
             return criarClienteDTO(savedCliente);
         } catch (ParseException ex) {
@@ -80,6 +97,26 @@ public class ClienteService {
 
     public void ativarDesativarCliente(boolean ativo, Long id) {
         clienteRepo.ativarUsuario(ativo, id);
+    }
+
+    public ResponseEntity<String> alterarSenha(Long id, HashMap<String, String> senhas) {
+        String senhaAtual = senhas.get("atual");
+        String novaSenha = senhas.get("nova");
+        String confirmarSenha = senhas.get("confirmar");
+        Optional<Cliente> optCliente = clienteRepo.findById(id);
+        Cliente cliente = optCliente.orElseThrow(() -> new RuntimeException("Não existe cliente com esse id"));
+        if (passwordEncoder.matches(senhaAtual, cliente.getSenha())) {
+            if (novaSenha.equals(confirmarSenha)) {
+                cliente.setSenha(passwordEncoder.encode(novaSenha));
+                clienteRepo.save(cliente);
+                return new ResponseEntity<>("Senha atualizada com sucesso!", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Nova senha e confirmar senha não são idênticas!",
+                        HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+        } else {
+            return new ResponseEntity<>("Senha atual inválida!", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public void adicionarEndereco(ClienteEnderecoDTO clienteEnderecoDTO) {
