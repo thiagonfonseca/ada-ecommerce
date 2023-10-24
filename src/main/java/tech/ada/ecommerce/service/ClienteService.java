@@ -10,9 +10,11 @@ import tech.ada.ecommerce.dto.ClienteEnderecoDTO;
 import tech.ada.ecommerce.model.Cliente;
 import tech.ada.ecommerce.model.ClienteEndereco;
 import tech.ada.ecommerce.model.Endereco;
+import tech.ada.ecommerce.model.Role;
 import tech.ada.ecommerce.repository.ClienteEnderecoRepository;
 import tech.ada.ecommerce.repository.ClienteRepository;
 import tech.ada.ecommerce.repository.EnderecoRepository;
+import tech.ada.ecommerce.repository.RoleRepository;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -28,13 +30,15 @@ public class ClienteService {
 
 //    @Autowired
     ClienteRepository clienteRepo;
+    RoleRepository roleRepo;
     EnderecoRepository enderecoRepo;
     ClienteEnderecoRepository clienteEnderecoRepo;
     PasswordEncoder passwordEncoder;
 
-    public ClienteService(ClienteRepository clienteRepo, EnderecoRepository enderecoRepo,
+    public ClienteService(ClienteRepository clienteRepo, RoleRepository roleRepo, EnderecoRepository enderecoRepo,
                           ClienteEnderecoRepository clienteEnderecoRepo, PasswordEncoder passwordEncoder) {
         this.clienteRepo = clienteRepo;
+        this.roleRepo = roleRepo;
         this.enderecoRepo = enderecoRepo;
         this.clienteEnderecoRepo = clienteEnderecoRepo;
         this.passwordEncoder = passwordEncoder;
@@ -67,12 +71,15 @@ public class ClienteService {
     public ClienteDTO atualizarCliente(ClienteDTO clienteDTO) {
         try {
             DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy");
-            Date dataNascimento = dtf.parse(clienteDTO.getDataNascimento());
             Optional<Cliente> optCliente = clienteRepo.findById(clienteDTO.getId());
             Cliente cliente = optCliente.orElseThrow(() -> new RuntimeException("Não existe cliente com esse id"));
-            cliente.setEmail(clienteDTO.getEmail());
-            cliente.setNomeCompleto(clienteDTO.getNomeCompleto());
-            cliente.setDataNascimento(dataNascimento);
+            if (clienteDTO.getEmail() != null && !clienteDTO.getEmail().isEmpty())
+                cliente.setEmail(clienteDTO.getEmail());
+            if (clienteDTO.getNomeCompleto() != null && !clienteDTO.getNomeCompleto().isEmpty())
+                cliente.setNomeCompleto(clienteDTO.getNomeCompleto());
+            if (clienteDTO.getDataNascimento() != null && !clienteDTO.getDataNascimento().isEmpty()) {
+                cliente.setDataNascimento(dtf.parse(clienteDTO.getDataNascimento()));
+            }
             Cliente savedCliente = clienteRepo.save(cliente);
             return criarClienteDTO(savedCliente);
         } catch (ParseException ex) {
@@ -117,6 +124,16 @@ public class ClienteService {
         } else {
             return new ResponseEntity<>("Senha atual inválida!", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public ResponseEntity<String> adicionarRole(Long idCliente, Long idRole) {
+        Optional<Cliente> optCliente = clienteRepo.findById(idCliente);
+        Cliente cliente = optCliente.orElseThrow(() -> new RuntimeException("Não existe cliente com esse id"));
+        Optional<Role> optRole = roleRepo.findById(idRole);
+        Role role = optRole.orElseThrow(() -> new RuntimeException("Não existe role com esse id"));
+        cliente.getRoles().add(role);
+        clienteRepo.save(cliente);
+        return new ResponseEntity<>("Role adicionada com sucesso!", HttpStatus.OK);
     }
 
     public void adicionarEndereco(ClienteEnderecoDTO clienteEnderecoDTO) {

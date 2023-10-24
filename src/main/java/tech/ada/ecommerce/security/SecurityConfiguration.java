@@ -47,6 +47,8 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(HttpMethod.POST, "/api/v1/cliente").permitAll()
+                        .requestMatchers("/api/v1/cliente/ativos").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/cliente/ativos").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers("/api/v1/login").permitAll()
                         .anyRequest().authenticated()
                 ).exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint)

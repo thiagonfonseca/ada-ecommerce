@@ -3,6 +3,7 @@ package tech.ada.ecommerce.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tech.ada.ecommerce.dto.ClienteDTO;
 import tech.ada.ecommerce.dto.ClienteEnderecoDTO;
@@ -14,6 +15,7 @@ import tech.ada.ecommerce.service.ClienteService;
 import java.util.HashMap;
 import java.util.List;
 
+//@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/v1/cliente")
 public class ClienteController {
@@ -30,6 +32,7 @@ public class ClienteController {
 
 //    @RequestMapping(method = RequestMethod.GET)
     @GetMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Cliente> getClientes() {
         return clienteService.buscarTodosOsClientes();
     }
@@ -66,6 +69,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<ClienteDTO> getClienteById(@PathVariable("id") Long idCliente) {
         return new ResponseEntity<>(clienteService.buscarPorId(idCliente), HttpStatus.OK);
     }
@@ -76,12 +80,14 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCliente(@PathVariable("id") Long id) {
         clienteService.deletarCliente(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> ativarDesativarCliente(@PathVariable("id") Long id, @RequestParam("ativo") boolean ativo) {
         clienteService.ativarDesativarCliente(ativo, id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -101,6 +107,13 @@ public class ClienteController {
     public ResponseEntity<String> adicionarEndereco(@RequestBody ClienteEnderecoDTO clienteEndereco) {
         clienteService.adicionarEndereco(clienteEndereco);
         return new ResponseEntity<>("Endereco adicionado com sucesso", HttpStatus.OK);
+    }
+
+    @PatchMapping("/role")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> adicionarRole(@RequestParam("idCliente") Long idCliente,
+                                                @RequestParam("idRole") Long idRole) {
+        return clienteService.adicionarRole(idCliente, idRole);
     }
 
 //    @PutMapping("")
