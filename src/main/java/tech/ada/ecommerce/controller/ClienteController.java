@@ -1,5 +1,7 @@
 package tech.ada.ecommerce.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,18 +9,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tech.ada.ecommerce.dto.ClienteDTO;
 import tech.ada.ecommerce.dto.ClienteEnderecoDTO;
+import tech.ada.ecommerce.exception.CustomExceptionHandler;
 import tech.ada.ecommerce.model.Cliente;
 import tech.ada.ecommerce.model.ClienteEndereco;
 import tech.ada.ecommerce.model.Endereco;
+import tech.ada.ecommerce.response.GenericResponse;
 import tech.ada.ecommerce.service.ClienteService;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 //@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/v1/cliente")
-public class ClienteController {
+public class ClienteController implements ClienteControllerDocs {
 
 
 //    @Autowired
@@ -44,12 +49,20 @@ public class ClienteController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ClienteDTO> saveCliente(@RequestBody ClienteDTO cliente) {
+    public ResponseEntity<GenericResponse> saveCliente(@RequestBody ClienteDTO cliente) {
         try {
             ClienteDTO savedCliente = clienteService.salvarCliente(cliente);
-            if (savedCliente != null)
-                return new ResponseEntity<>(savedCliente, HttpStatus.CREATED);
+            if (savedCliente != null) {
+                GenericResponse response = new GenericResponse();
+                response.setStatus(HttpStatus.CREATED.value());
+                response.setData(savedCliente);
+                response.setMessage("Cliente criado com sucesso!");
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ConstraintViolationException exception) {
+            CustomExceptionHandler ex = new CustomExceptionHandler();
+            return new ResponseEntity<>(ex.processException(exception), HttpStatus.BAD_REQUEST);
         } catch (Exception exception) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

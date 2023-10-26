@@ -2,6 +2,7 @@ package tech.ada.ecommerce.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import org.hibernate.validator.constraints.CreditCardNumber;
 
 import java.util.Date;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import java.util.Objects;
 public class CartaoCreditoFormaPagamento extends FormaPagamento {
 
     @Column(unique = true, nullable = false, length = 16)
+    @CreditCardNumber
     private String numeroCartao;
 
     @Column(nullable = false)

@@ -3,6 +3,8 @@ package tech.ada.ecommerce.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -24,12 +26,14 @@ public class Cliente implements Serializable {
     private Long id;
 
     @Column(length = 50, nullable = false)
+    @Length(max = 50, min = 3)
     private String nomeCompleto;
 
     @Column(nullable = false)
     private Date dataNascimento;
 
     @Column(unique = true, nullable = false)
+    @CPF
     private String cpf;
 
     @Column(unique = true, nullable = false)

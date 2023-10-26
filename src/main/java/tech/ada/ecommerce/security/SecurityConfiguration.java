@@ -50,6 +50,10 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/cliente/ativos").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/cliente/ativos").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers("/api/v1/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 ).exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint)
                 ).sessionManagement(session -> session
